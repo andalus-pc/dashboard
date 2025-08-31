@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Santri – Login & Dashboard</title>
+  <style>
+    /* CSS global disini */
+    :root{
+      --bg:#0f172a;--card:#111827;--muted:#94a3b8;--text:#e5e7eb;
+      --primary:#22c55e;--primary-2:#16a34a;--shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}html,body{height:100%}
+    body{margin:0;font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;
+      background:radial-gradient(1200px 600px at 20% -10%,rgba(34,197,94,.15),transparent 60%),
+                 radial-gradient(1000px 500px at 100% 0%,rgba(59,130,246,.12),transparent 60%),var(--bg);
+      color:var(--text)}
+    .center{min-height:100vh;display:grid;place-items:center}
+    .container{max-width:980px;margin:0 auto;padding:24px}
+    .glass{width:100%;max-width:460px;background:rgba(17,24,39,.75);backdrop-filter:blur(10px);
+      border:1px solid rgba(148,163,184,.2);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px}
+    h1,h2,h3{margin:0;color:var(--text)}p{margin:0;color:var(--muted)}
+    label{display:block;margin:14px 0 6px;font-size:14px;color:#cbd5e1}
+    input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(148,163,184,.25);
+      background:#0b1220;color:var(--text)}
+    input:focus{outline:none;border-color:#60a5fa;box-shadow:0 0 0 4px rgba(59,130,246,.2)}
+    .btn{margin-top:16px;width:100%;padding:12px 14px;border-radius:14px;border:none;color:white;
+      background:linear-gradient(135deg,var(--primary),var(--primary-2));cursor:pointer;font-weight:600}
+    .btn:active{transform:translateY(1px)}.error{margin-top:10px;font-size:14px;color:#fecaca}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;
+      border:1px solid rgba(148,163,184,.2);background:rgba(2,6,23,.6);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .greet{font-size:18px}.username{font-weight:700}
+    .logout{border:none;padding:10px 14px;border-radius:12px;background:#1f2937;color:#e5e7eb;cursor:pointer}
+    .logout:hover{background:#374151}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:18px}
+    .card{grid-column:span 12;background:rgba(17,24,39,.75);border:1px solid rgba(148,163,184,.18);
+      border-radius:var(--radius);padding:18px;transition:.15s}
+    .card:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(0,0,0,.45)}
+    .menu{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .tile{grid-column:span 12;display:flex;align-items:center;justify-content:space-between;
+      padding:18px;border-radius:16px;border:1px solid rgba(148,163,184,.18);
+      background:linear-gradient(180deg,rgba(2,6,23,.8),rgba(2,6,23,.5));cursor:pointer}
+    .tile h3{margin:0;font-size:18px}.tile small{color:var(--muted)}.tile:active{transform:translateY(1px)}
+    @media(min-width:640px){.card{grid-column:span 6}.tile{grid-column:span 6}}
+    @media(min-width:980px){.card{grid-column:span 4}.tile{grid-column:span 4}}
+    .hidden{display:none!important}
+  </style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="loginPage" class="center">
+    <div class="glass">
+      <h1>Masuk Aplikasi</h1>
+      <p>Gunakan <b>password: <code>----</code></b>. Username bebas.</p>
+      <label for="username">Username</label>
+      <input id="username" type="text" placeholder="mis. admin_santri">
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="------">
+      <button id="loginBtn" class="btn">Login</button>
+      <div id="error" class="error hidden"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="app" class="container hidden">
+    <div class="topbar">
+      <div class="greet"><span id="greetText">Selamat datang</span>, <span class="username" id="userLabel">User</span> 👋</div>
+      <button id="logoutBtn" class="logout">Keluar</button>
+    </div>
+
+    <div class="grid">
+      <div class="card"><h2>Menu Utama</h2><p>Pilih modul di bawah untuk mulai bekerja.</p></div>
+    </div>
+
+    <div class="menu" style="margin-top:18px">
+      <div class="tile" onclick="openLink('sop.html')"><div><h3>SOP</h3><small>Standar Operasional Prosedur</small></div>›</div>
+      <div class="tile" onclick="openLink('pendataan.html')"><div><h3>Pendataan Santri</h3><small>Kelola data santri</small></div>›</div>
+      <div class="tile" onclick="openLink('inventaris.html')"><div><h3>Pendataan Inventaris</h3><small>Barang inventaris pondok</small></div>›</div>
+      <div class="tile" onclick="openLink('peraturan.html')"><div><h3>Peraturan</h3><small>Tata tertib</small></div>›</div>
+      <div class="tile" onclick="openLink('troubel.html')"><div><h3>Pemecahan Masalah</h3><small>Alur troubleshooting</small></div>›</div>
+      <div class="tile" onclick="openLink('laporpak.html')"><div><h3>Laporan Masalah</h3><small>Buat laporan</small></div>›</div>
+    </div>
+  </div>
+
+<script>
+  const loginPage=document.getElementById('loginPage'),
+        app=document.getElementById('app'),
+        usernameInput=document.getElementById('username'),
+        passwordInput=document.getElementById('password'),
+        loginBtn=document.getElementById('loginBtn'),
+        errorBox=document.getElementById('error'),
+        userLabel=document.getElementById('userLabel'),
+        greetText=document.getElementById('greetText');
+
+  usernameInput.focus();
+
+  function getGreetingByHour(h){
+    if(h>=4&&h<=10)return 'Selamat pagi';
+    if(h>=11&&h<=14)return 'Selamat siang';
+    if(h>=15&&h<=17)return 'Selamat sore';
+    return 'Selamat malam';
+  }
+  function updateGreeting(){
+    const now=new Date();
+    greetText.textContent=getGreetingByHour(now.getHours());
+  }
+  function showApp(u){
+    userLabel.textContent=u;
+    updateGreeting();
+    loginPage.classList.add('hidden');
+    app.classList.remove('hidden');
+  }
+
+  // login handler
+  loginBtn.onclick=()=>{
+    const u=usernameInput.value.trim(),
+          p=passwordInput.value;
+    if(!u){
+      errorBox.textContent='Username tidak boleh kosong';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+    if(p!=='operator'){
+      errorBox.textContent='Password salah.';
+      errorBox.classList.remove('hidden');
+      passwordInput.value="";
+      passwordInput.focus();
+      return;
+    }
+    errorBox.classList.add('hidden');
+    sessionStorage.setItem("loggedUser", u); // simpan sesi
+    showApp(u);
+  }
+
+  // Enter = login
+  usernameInput.addEventListener("keydown", e=>{
+    if(e.key==="Enter") loginBtn.click();
+  });
+  passwordInput.addEventListener("keydown", e=>{
+    if(e.key==="Enter") loginBtn.click();
+  });
+
+  // logout handler
+  document.getElementById('logoutBtn').onclick=()=>{
+    app.classList.add('hidden');
+    loginPage.classList.remove('hidden');
+    sessionStorage.removeItem("loggedUser"); // hapus sesi
+    usernameInput.value='';
+    passwordInput.value='';
+    usernameInput.focus();
+  }
+
+  function openLink(url){
+    window.open(url,url==='pendataan.html'?'_blank':'_self');
+  }
+
+  // cek kalau sebelumnya sudah login (di sesi yang sama)
+  const savedUser = sessionStorage.getItem("loggedUser");
+  if(savedUser){
+    showApp(savedUser);
+  }
+
+  setInterval(updateGreeting,60000);
+</script>
+
+
+</body>
+</html>

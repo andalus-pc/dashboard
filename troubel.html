@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pemecahan Masalah</title>
+  <style>
+    :root{--bg:#0f172a;--card:#111827;--muted:#94a3b8;--text:#e5e7eb;
+      --radius:18px;--shadow:0 10px 30px rgba(0,0,0,.35);}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Segoe UI,Roboto,Arial;
+      background:radial-gradient(1200px 600px at 20% -10%,rgba(34,197,94,.15),transparent 60%),
+                 radial-gradient(1000px 500px at 100% 0%,rgba(59,130,246,.12),transparent 60%),var(--bg);
+      color:var(--text)}
+    .container{max-width:1000px;margin:0 auto;padding:24px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:18px 22px;border:1px solid rgba(148,163,184,.2);background:rgba(2,6,23,.6);
+      border-radius:var(--radius);box-shadow:var(--shadow)}
+    .logout{border:none;padding:10px 14px;border-radius:12px;background:#1f2937;color:#e5e7eb;cursor:pointer}
+    .card{margin-top:18px;background:rgba(17,24,39,.9);border:1px solid rgba(148,163,184,.2);
+      border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid rgba(148,163,184,.3);padding:8px;vertical-align:top}
+    th{background:#1f2937;text-align:left}
+    tr:nth-child(even){background:#111827}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="greet">🛠️ Pemecahan Masalah</div>
+      <button onclick="goBack()" class="logout">← Dashboard</button>
+    </div>
+
+    <div class="card">
+      <h2>Daftar Masalah & Solusi</h2>
+      <table>
+        <thead>
+          <tr><th>No</th><th>Masalah</th><th>Solusi</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Wifi tidak ada & ada tanda seru kuning</td><td>1. Coba sambungkan ke wifi "Pesantren Al-Andalus"<br>2. Buka Login Page 192.168.76.1<br>3. Cek USB Dongle TP-LINK</td></tr>
+          <tr><td>2</td><td>Notifikasi "Additional log on information may be required"</td><td>1. Buka browser dan login page 192.168.76.1<br>2. Masukkan ID & Password wifi</td></tr>
+          <tr><td>3</td><td>Layar tidak hidup</td><td>1. Cek kabel power monitor<br>2. Cek tombol power monitor<br>3. Cek kabel penyambung monitor ke PC</td></tr>
+          <tr><td>4</td><td>CPU tidak hidup</td><td>Cek kabel power CPU</td></tr>
+          <tr><td>5</td><td>CPU hidup lalu mati lagi</td><td>1. Pasang ulang kabel power<br>2. Pasang ulang RAM</td></tr>
+          <tr><td>6</td><td>Keyboard/Mouse tidak berfungsi</td><td>1. Cek sambungan USB<br>2. Ganti perangkat lain</td></tr>
+          <tr><td>7</td><td>Headset/Audio tidak terdeteksi</td><td>1. Sambungkan ke port hijau belakang CPU<br>2. Cek driver Realtek Audio</td></tr>
+          <tr><td>8</td><td>Layar tidak pas/terpotong</td><td>1. Tekan tombol power 5 detik (AOC)<br>2. Tombol ke-2 dari kiri (Lenovo)<br>3. Atur resolusi layar di Control Panel<br>4. Ganti kabel</td></tr>
+          <tr><td>9</td><td>Tidak ada browser</td><td>Browser yang dipakai adalah Cent Chrome</td></tr>
+          <tr><td>10</td><td>Mouse tidak responsif</td><td>1. Colok ulang USB<br>2. Gunakan alas hitam<br>3. Ganti mouse</td></tr>
+          <tr><td>11</td><td>Komputer lamban</td><td>1. Buka aplikasi 1 per 1<br>2. Restart</td></tr>
+          <tr><td>12</td><td>Windows tidak muncul (langsung BIOS)</td><td>1. Restart & cek tombol DEL/F2/F10<br>2. Cek HDD/SSD</td></tr>
+          <tr><td>13</td><td>Cara masuk BIOS</td><td>Tahan tombol DEL/F2/F10 saat boot</td></tr>
+          <tr><td>14</td><td>Tidak bisa buka website (di PC lain bisa)</td><td>Kemungkinan diblokir / tidak support</td></tr>
+          <tr><td>15</td><td>"Windows Failed To Start"</td><td>1. Mungkin mati paksa/listrik padam<br>2. Pilih Start Windows Normally</td></tr>
+          <tr><td>16</td><td>"Windows Did Not Shutdown Successfully"</td><td>1. Mungkin mati paksa/listrik padam<br>2. Pilih Start Windows Normally</td></tr>
+          <tr><td>17</td><td>Windows minta aktivasi</td><td>Abaikan</td></tr>
+          <tr><td>18</td><td>Windows tidak merespon</td><td>1. Tekan Ctrl+Alt+Del<br>2. Shutdown dari menu power</td></tr>
+          <tr><td>19</td><td>Koneksi lambat</td><td>1. Banyak pengguna aktif<br>2. Speed limit 5Mbps</td></tr>
+          <tr><td>20</td><td>Ada kebocoran arus / kesetrum</td><td>1. Hindari menyentuh bagian besi CPU<br>2. Jangan sentuh port CPU dengan tangan basah</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>function goBack(){window.location.href="index.html";}</script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Laporan Masalah — LaporPak</title>
+
+  <!-- html2pdf.js untuk konversi HTML ke PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0f172a;
+      --card:#111827;
+      --muted:#94a3b8;
+      --text:#e5e7eb;
+      --primary:#22c55e;
+      --primary-2:#16a34a;
+      --radius:14px;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding:28px;
+    }
+    .container{max-width:950px;margin:0 auto}
+    .topbar{display:flex;justify-content:space-between;padding:18px;background:rgba(2,6,23,.55);border-radius:18px}
+    .layout{display:grid;grid-template-columns:1fr 440px;gap:20px;margin-top:18px}
+    @media(max-width:980px){.layout{grid-template-columns:1fr}}
+    .card{background:rgba(17,24,39,.85);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+    label{display:block;margin-top:10px;font-size:13px;color:#cbd5e1}
+    input,textarea{width:100%;padding:10px 12px;border-radius:10px;background:#0b1220;color:var(--text);border:1px solid rgba(148,163,184,.12);margin-top:6px}
+    textarea{min-height:86px}
+    .btn{margin-top:16px;padding:12px 16px;border:none;border-radius:10px;color:white;cursor:pointer;font-weight:600}
+    .btn-green{background:linear-gradient(135deg,var(--primary),var(--primary-2))}
+    .btn-gray{background:#111827}
+    .btn-red{background:#ef4444}
+    .btn-blue{background:#2563eb}
+    .btn-sm{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+    .list{max-height:70vh;overflow:auto;padding:6px}
+    .item{padding:12px;margin-bottom:10px;border-radius:12px;background:#0f172a;border:1px solid rgba(255,255,255,.03);display:flex;justify-content:space-between;gap:12px}
+    .item small{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>📄 <strong>LaporPak</strong> — Form Laporan & Riwayat</div>
+      <button class="btn btn-gray" onclick="goBack()">← Dashboard</button>
+    </div>
+
+    <div class="layout">
+      <!-- FORM -->
+      <div class="card">
+        <h2>Form Laporan</h2>
+        <label>Nama Operator</label><input id="operator">
+        <label>Tanggal</label><input type="date" id="tanggal">
+        <label>Nama Client</label><input id="client">
+        <label>Kelas</label><input id="kelas">
+        <label>Nomor PC</label><input type="number" id="pc">
+        <label>Pelanggaran</label><textarea id="pelanggaran"></textarea>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-green" onclick="buatDanExport()">📤 Export PDF</button>
+          <button class="btn btn-gray" onclick="previewLaporan()">🔎 Preview</button>
+          <button class="btn btn-red" onclick="clearForm()">🧹 Reset</button>
+        </div>
+
+        <h3>Preview</h3>
+        <div id="preview" style="background:#1e293b;padding:12px;border-radius:8px"></div>
+      </div>
+
+      <!-- RIWAYAT -->
+      <div class="card">
+        <h2>📑 Riwayat</h2>
+        <div id="listLaporan" class="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY="riwayat_pdf";
+    let riwayat=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+    const listEl=document.getElementById("listLaporan");
+    const previewEl=document.getElementById("preview");
+
+    (function setToday(){
+      const d=new Date();
+      document.getElementById("tanggal").value=d.toISOString().slice(0,10);
+    })();
+
+    function goBack(){alert("Balik ke dashboard (atur sesuai kebutuhan).");}
+
+    function saveRiwayat(){localStorage.setItem(STORAGE_KEY,JSON.stringify(riwayat));}
+
+    function buildHtmlForPdf(d){
+      return `
+        <div style="font-family:Arial,sans-serif;padding:20px">
+          <h2 style="text-align:center">LAPORAN PELANGGARAN</h2>
+          <p><b>Operator:</b> ${d.operator}</p>
+          <p><b>Tanggal:</b> ${d.tanggal}</p>
+          <p><b>Nama Client:</b> ${d.client}</p>
+          <p><b>Kelas:</b> ${d.kelas} | <b>PC:</b> ${d.pc}</p>
+          <h3>Detil Pelanggaran</h3>
+          <p>${d.pelanggaran}</p>
+        </div>
+      `;
+    }
+
+    function buatDanExport(){
+      const data={
+        operator:document.getElementById("operator").value.trim(),
+        tanggal:document.getElementById("tanggal").value,
+        client:document.getElementById("client").value.trim(),
+        kelas:document.getElementById("kelas").value.trim(),
+        pc:document.getElementById("pc").value.trim(),
+        pelanggaran:document.getElementById("pelanggaran").value.trim()
+      };
+      if(!data.operator||!data.tanggal||!data.client||!data.kelas||!data.pc||!data.pelanggaran){
+        alert("⚠ Lengkapi semua field!");return;
+      }
+      const html=buildHtmlForPdf(data);
+      const opt={margin:10,filename:`laporan_${data.client}_${data.tanggal}.pdf`,image:{type:"jpeg",quality:0.98},html2canvas:{scale:2},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};
+      html2pdf().from(html).set(opt).save();
+
+      riwayat.push(data);saveRiwayat();tampilkanRiwayat();
+    }
+
+    function tampilkanRiwayat(){
+      listEl.innerHTML="";
+      if(riwayat.length===0){listEl.innerHTML="<i>Belum ada laporan</i>";return;}
+      riwayat.forEach((r,i)=>{
+        const div=document.createElement("div");
+        div.className="item";
+        div.innerHTML=`<div><b>${r.client}</b><br><small>${r.tanggal} • ${r.operator} • Kelas ${r.kelas} • PC ${r.pc}</small></div>
+        <button class="btn-sm btn-blue" onclick="exportSingle(${i})">📤 PDF</button>`;
+        listEl.appendChild(div);
+      });
+    }
+
+    function exportSingle(i){
+      const item=riwayat[i];if(!item) return;
+      const html=buildHtmlForPdf(item);
+      const opt={margin:10,filename:`laporan_${item.client}_${item.tanggal}.pdf`,image:{type:"jpeg",quality:0.98},html2canvas:{scale:2},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};
+      html2pdf().from(html).set(opt).save();
+    }
+
+    function previewLaporan(){
+      const d={
+        operator:document.getElementById("operator").value,
+        tanggal:document.getElementById("tanggal").value,
+        client:document.getElementById("client").value,
+        kelas:document.getElementById("kelas").value,
+        pc:document.getElementById("pc").value,
+        pelanggaran:document.getElementById("pelanggaran").value
+      };
+      previewEl.innerHTML=buildHtmlForPdf(d);
+    }
+
+    function clearForm(){
+      document.getElementById("operator").value="";
+      document.getElementById("client").value="";
+      document.getElementById("kelas").value="";
+      document.getElementById("pc").value="";
+      document.getElementById("pelanggaran").value="";
+      setToday();previewEl.innerHTML="";
+    }
+
+    tampilkanRiwayat();
+  </script>
+</body>
+</html>

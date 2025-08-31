@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pendataan Santri</title>
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/992/992700.png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root{--bg:#0f172a;--card:#111827;--muted:#94a3b8;--text:#e5e7eb;
+      --primary:#22c55e;--primary-2:#16a34a;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.35);}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Segoe UI,Roboto,Arial;background:radial-gradient(1200px 600px at 20% -10%,rgba(34,197,94,.15),transparent 60%),radial-gradient(1000px 500px at 100% 0%,rgba(59,130,246,.12),transparent 60%),var(--bg);color:var(--text)}
+    .container{max-width:1000px;margin:0 auto;padding:24px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;border:1px solid rgba(148,163,184,.2);background:rgba(2,6,23,.6);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .logout{border:none;padding:10px 14px;border-radius:12px;background:#1f2937;color:#e5e7eb;cursor:pointer}
+    .card{margin-top:18px;background:rgba(17,24,39,.85);border:1px solid rgba(148,163,184,.2);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+    h2{margin-top:0}
+    table{width:100%;border-collapse:collapse;margin-top:16px}
+    th,td{border:1px solid rgba(148,163,184,.3);padding:8px;text-align:left}
+    th{background:#1f2937}
+    tr:nth-child(even){background:#111827}
+    label{display:block;margin-top:10px}
+    input[type=text], input[type=number]{width:100%;padding:8px;border-radius:8px;background:#0b1220;color:white;border:1px solid rgba(148,163,184,.3)}
+    select{width:100%;padding:8px;border-radius:8px;background:#0b1220;color:white;border:1px solid rgba(148,163,184,.3)}
+    .kelas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:6px;margin-top:8px}
+    .btn{margin-top:14px;padding:10px 14px;border:none;border-radius:10px;color:white;cursor:pointer;font-weight:600}
+    .btn-green{background:linear-gradient(135deg,var(--primary),var(--primary-2))}
+    .btn-blue{background:#2563eb}
+    .btn-red{background:#f44336;}
+    .btn-gray{background:#9e9e9e;}
+    .popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);padding:20px 30px;color:#fff;border-radius:12px;text-align:center;z-index:1000;box-shadow:0 0 20px rgba(0,0,0,0.5);}
+    .popup button{margin-top:15px;padding:10px 16px;border:none;border-radius:8px;background:#f44336;color:white;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="greet">📝 Pendataan Santri</div>
+      <button onclick="goBack()" class="logout">← Dashboard</button>
+    </div>
+
+    <div class="card">
+      <h2>Form Input</h2>
+      <label>Nama Santri</label>
+      <input type="text" id="nama">
+      <label>Kelas</label>
+      <div class="kelas-grid" id="kelasGrid"></div>
+      <label>Tanggal</label>
+      <input type="text" id="tanggal" readonly>
+      <label>Jenis Pembelajaran</label>
+      <select id="jenisPembelajaran" onchange="setTimer()">
+        <option value="SNBT">SNBT - 1 jam</option>
+        <option value="TKA">TKA - 1 jam</option>
+        <option value="Info Kuliah">Info Kuliah - 30 menit</option>
+        <option value="Ruangguru">Ruangguru - Bebas</option>
+        <option value="Khusus">Khusus</option>
+      </select>
+      <label>Nomor PC</label>
+      <input type="text" id="pcNumber">
+      <label>Timer (Menit)</label>
+      <input type="number" id="timer" min="1" max="180">
+      <button class="btn btn-green" onclick="tambahEntri()">➕ Tambah Entri</button>
+      <button class="btn btn-blue" onclick="exportExcel()">📤 Export Excel</button>
+      <button class="btn btn-gray" onclick="resetForm()">🔄 Reset</button>
+    </div>
+
+    <div class="card">
+      <h2>Daftar Data</h2>
+      <table id="tabelData">
+        <thead><tr><th>Nama</th><th>Kelas</th><th>Tanggal</th><th>Jenis</th><th>Nomor PC</th><th>Timer</th><th>Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="resetPopup" class="popup">
+    <p id="popupMessage"></p>
+    <button onclick="closePopup()">Tutup</button>
+    <audio id="notificationSound" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfae1b6.mp3" preload="auto"></audio>
+  </div>
+
+<script>
+const KELAS_LIST=["7A","7B","7C","8A","8B","8C","9A","9B","10C","10D","10E","11C","11D","12B","12C"];
+let isRunning={},intervals={};
+let flashIntervalId=null,isFlashing=false;
+const originalTitle=document.title;
+
+function renderKelasOptions(){
+  const grid=document.getElementById("kelasGrid");
+  grid.innerHTML=KELAS_LIST.map(k=>`<label><input type="radio" name="kelas" value="${k}">${k}</label>`).join('');
+}
+document.getElementById("tanggal").value=new Date().toLocaleDateString("id-ID");
+
+function setTimer(){
+  const jenis=document.getElementById("jenisPembelajaran").value;
+  let t=document.getElementById("timer");
+  if(jenis==="SNBT"||jenis==="TKA"){t.value=60;t.disabled=true;}
+  else if(jenis==="Info Kuliah"){t.value=30;t.disabled=true;}
+  else{t.value="";t.disabled=false;}
+}
+
+function resetFormFields(){
+  document.getElementById("nama").value="";
+  document.querySelectorAll('input[name="kelas"]').forEach(c=>c.checked=false);
+  document.getElementById("pcNumber").value="";
+  document.getElementById("timer").value="";
+  setTimer();
+}
+
+function tambahEntri(){
+  const nama=document.getElementById("nama").value.trim();
+  const kelas=document.querySelector('input[name="kelas"]:checked')?.value||"";
+  const tanggal=document.getElementById("tanggal").value;
+  const jenis=document.getElementById("jenisPembelajaran").value;
+  const pc=document.getElementById("pcNumber").value.trim();
+  let timer=document.getElementById("timer").value.trim();
+  if(!nama||!kelas||!pc||!timer){alert("Lengkapi semua kolom!");return;}
+  if(jenis==="SNBT"||jenis==="TKA") timer=60;
+  else if(jenis==="Info Kuliah") timer=30;
+
+  const tbody=document.querySelector("#tabelData tbody");
+  const row=tbody.insertRow();
+  row.insertCell(0).innerText=nama;
+  row.insertCell(1).innerText=kelas;
+  row.insertCell(2).innerText=tanggal;
+  row.insertCell(3).innerText=jenis;
+  row.insertCell(4).innerText=pc;
+  row.insertCell(5).innerText=timer+" menit";
+  row.insertCell(6).innerHTML=`<button class="btn btn-blue" onclick="startStopTimer(this, ${tbody.rows.length-1}, ${timer})">Stop</button>
+    <button class="btn btn-red" onclick="deleteRow(this)">Delete</button>`;
+  resetFormFields();
+
+  // auto start timer
+  const startBtn=row.cells[6].querySelector(".btn-blue");
+  startStopTimer(startBtn,tbody.rows.length-1,timer);
+}
+
+function startStopTimer(button,rowIndex,timer){
+  const row=document.querySelector("#tabelData tbody").rows[rowIndex];
+  const cell=row.cells[5];
+  let timeLeft=parseInt(timer)*60;
+
+  if(!isRunning[rowIndex]){
+    intervals[rowIndex]=setInterval(()=>{
+      if(timeLeft<=0){
+        clearInterval(intervals[rowIndex]);
+        cell.innerText="Selesai!";
+        playSound();showPopup(row);
+        startFlashingTitle(`⏰ Waktu ${row.cells[0].innerText} habis!`);
+        button.innerText="Start";isRunning[rowIndex]=false;
+      }else{
+        let m=Math.floor(timeLeft/60),s=timeLeft%60;
+        cell.innerText=`${m}:${s<10?'0':''}${s} menit`;
+        timeLeft--;
+      }
+    },1000);
+    button.innerText="Stop";isRunning[rowIndex]=true;
+  }else{
+    clearInterval(intervals[rowIndex]);
+    button.innerText="Start";isRunning[rowIndex]=false;
+  }
+}
+
+function deleteRow(button){button.parentElement.parentElement.remove();}
+function playSound(){const a=document.getElementById('notificationSound');a.currentTime=0;a.play().catch(()=>{});}
+function showPopup(row){
+  const nama=row.cells[0].innerText,kelas=row.cells[1].innerText,pc=row.cells[4].innerText;
+  document.getElementById("popupMessage").innerText=`Waktu ${nama} (kelas ${kelas}) di PC ${pc} telah habis!`;
+  document.getElementById("resetPopup").style.display="block";
+}
+function closePopup(){document.getElementById("resetPopup").style.display="none";stopFlashingTitle();}
+function startFlashingTitle(msg){if(isFlashing) return;isFlashing=true;let showOriginal=false;flashIntervalId=setInterval(()=>{document.title=showOriginal?originalTitle:msg;showOriginal=!showOriginal;},1000);}
+function stopFlashingTitle(){if(isFlashing){clearInterval(flashIntervalId);document.title=originalTitle;isFlashing=false;}}
+function exportExcel(){const tbl=document.getElementById("tabelData");const wb=XLSX.utils.table_to_book(tbl,{sheet:"Santri"});XLSX.writeFile(wb,"pendataan_"+new Date().toISOString().slice(0,10)+".xlsx");}
+function resetForm(){if(confirm("Sudah export data?")){resetFormFields();document.getElementById("tanggal").value=new Date().toLocaleDateString("id-ID");document.getElementById("jenisPembelajaran").value="SNBT";document.querySelector("#tabelData tbody").innerHTML="";}}
+function goBack(){window.location.href="index.html";}
+
+window.addEventListener("beforeunload",function(e){e.preventDefault();e.returnValue="Data mungkin hilang jika belum diexport.";});
+document.addEventListener("click",()=>{const a=document.getElementById("notificationSound");a.volume=0.01;a.play().then(()=>{a.pause();a.currentTime=0;a.volume=1.0;}).catch(()=>{});},{once:true});
+renderKelasOptions();setTimer();
+</script>
+</body>
+</html>
