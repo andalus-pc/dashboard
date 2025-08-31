@@ -21,164 +21,255 @@
     th{background:#1f2937}
     tr:nth-child(even){background:#111827}
     label{display:block;margin-top:10px}
-    input[type=text], input[type=number]{width:100%;padding:8px;border-radius:8px;background:#0b1220;color:white;border:1px solid rgba(148,163,184,.3)}
-    select{width:100%;padding:8px;border-radius:8px;background:#0b1220;color:white;border:1px solid rgba(148,163,184,.3)}
+    input,select{width:100%;padding:8px;border-radius:8px;background:#0b1220;color:white;border:1px solid rgba(148,163,184,.3)}
     .kelas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:6px;margin-top:8px}
     .btn{margin-top:14px;padding:10px 14px;border:none;border-radius:10px;color:white;cursor:pointer;font-weight:600}
     .btn-green{background:linear-gradient(135deg,var(--primary),var(--primary-2))}
     .btn-blue{background:#2563eb}
-    .btn-red{background:#f44336;}
-    .btn-gray{background:#9e9e9e;}
-    .popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);padding:20px 30px;color:#fff;border-radius:12px;text-align:center;z-index:1000;box-shadow:0 0 20px rgba(0,0,0,0.5);}
-    .popup button{margin-top:15px;padding:10px 16px;border:none;border-radius:8px;background:#f44336;color:white;cursor:pointer}
+    .btn-red{background:#f44336}
+    .btn-gray{background:#9e9e9e}
+    .timer{font-weight:bold;color:#fca311}
+    .popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;z-index:9999}
+    .popup{background:#1e293b;padding:24px;border-radius:14px;text-align:center;color:white;box-shadow:var(--shadow)}
+    .popup button{margin-top:15px;padding:10px 16px;border:none;border-radius:10px;background:#ef4444;color:white;font-weight:600;cursor:pointer}
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="greet">📝 Pendataan Santri</div>
-      <button onclick="goBack()" class="logout">← Dashboard</button>
-    </div>
-
-    <div class="card">
-      <h2>Form Input</h2>
-      <label>Nama Santri</label>
-      <input type="text" id="nama">
-      <label>Kelas</label>
-      <div class="kelas-grid" id="kelasGrid"></div>
-      <label>Tanggal</label>
-      <input type="text" id="tanggal" readonly>
-      <label>Jenis Pembelajaran</label>
-      <select id="jenisPembelajaran" onchange="setTimer()">
-        <option value="SNBT">SNBT - 1 jam</option>
-        <option value="TKA">TKA - 1 jam</option>
-        <option value="Info Kuliah">Info Kuliah - 30 menit</option>
-        <option value="Ruangguru">Ruangguru - Bebas</option>
-        <option value="Khusus">Khusus</option>
-      </select>
-      <label>Nomor PC</label>
-      <input type="text" id="pcNumber">
-      <label>Timer (Menit)</label>
-      <input type="number" id="timer" min="1" max="180">
-      <button class="btn btn-green" onclick="tambahEntri()">➕ Tambah Entri</button>
-      <button class="btn btn-blue" onclick="exportExcel()">📤 Export Excel</button>
-      <button class="btn btn-gray" onclick="resetForm()">🔄 Reset</button>
-    </div>
-
-    <div class="card">
-      <h2>Daftar Data</h2>
-      <table id="tabelData">
-        <thead><tr><th>Nama</th><th>Kelas</th><th>Tanggal</th><th>Jenis</th><th>Nomor PC</th><th>Timer</th><th>Aksi</th></tr></thead>
-        <tbody></tbody>
-      </table>
+<div class="container">
+  <div class="topbar">
+    <div class="greet" id="titleText">📝 Pendataan Santri</div>
+    <div>
+      <button onclick="toggleLang()" class="logout" id="langBtn">🌐 English</button>
+      <button onclick="goBack()" class="logout" id="backBtn">← Dashboard</button>
     </div>
   </div>
 
-  <div id="resetPopup" class="popup">
-    <p id="popupMessage"></p>
-    <button onclick="closePopup()">Tutup</button>
-    <audio id="notificationSound" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfae1b6.mp3" preload="auto"></audio>
+  <div class="card">
+    <h2 id="formTitle">Form Input</h2>
+    <label id="lblNama">Nama Santri</label>
+    <input type="text" id="nama" autocomplete="off">
+    <label id="lblKelas">Kelas</label>
+    <div class="kelas-grid" id="kelasGrid"></div>
+    <label id="lblTanggal">Tanggal</label>
+    <input type="text" id="tanggal" readonly>
+    <label id="lblJenis">Jenis Pembelajaran</label>
+    <select id="jenisPembelajaran" onchange="setTimer()">
+      <option value="SNBT">SNBT - 1 jam</option>
+      <option value="TKA">TKA - 1 jam</option>
+      <option value="Info Kuliah">Info Kuliah - 30 menit</option>
+      <option value="Ruangguru">Ruangguru - Bebas</option>
+      <option value="Khusus">Khusus</option>
+    </select>
+    <div id="tujuanContainer" style="display:none;">
+      <label id="lblTujuan">Tujuan (khusus)</label>
+      <input type="text" id="tujuan" autocomplete="off">
+    </div>
+    <label id="lblPC">Nomor PC</label>
+    <input type="text" id="pcNumber" autocomplete="off">
+    <label id="lblTimer">Timer (Menit)</label>
+    <input type="number" id="timer" min="1" max="180">
+    <button class="btn btn-green" onclick="tambahEntri()" id="btnTambah">➕ Tambah Entri</button>
+    <button class="btn btn-blue" onclick="exportExcel()" id="btnExport">📤 Export Excel</button>
+    <button class="btn btn-gray" onclick="resetForm()" id="btnReset">🔄 Reset</button>
   </div>
+
+  <div class="card">
+    <h2 id="listTitle">Daftar Data</h2>
+    <table id="tabelData">
+      <thead>
+        <tr>
+          <th id="thNama">Nama</th>
+          <th id="thKelas">Kelas</th>
+          <th id="thTanggal">Tanggal</th>
+          <th id="thJenis">Jenis</th>
+          <th id="thPC">PC</th>
+          <th id="thTimer">Timer</th>
+          <th id="thAksi">Aksi</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<audio id="notificationSound" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
 
 <script>
 const KELAS_LIST=["7A","7B","7C","8A","8B","8C","9A","9B","10C","10D","10E","11C","11D","12B","12C"];
-let isRunning={},intervals={};
-let flashIntervalId=null,isFlashing=false;
-const originalTitle=document.title;
+let isRunning={},intervals={},flashIntervalId=null,isFlashing=false,originalTitle=document.title;
+let lang="id"; // default bahasa
 
+// ===== TRANSLATIONS =====
+const textMap={
+  id:{
+    title:"📝 Pendataan Santri", back:"← Dashboard", form:"Form Input", nama:"Nama Santri",
+    kelas:"Kelas", tanggal:"Tanggal", jenis:"Jenis Pembelajaran", tujuan:"Tujuan (khusus)",
+    pc:"Nomor PC", timer:"Timer (Menit)", tambah:"➕ Tambah Entri", export:"📤 Export Excel",
+    reset:"🔄 Reset", list:"Daftar Data", aksi:"Aksi", popupTitle:"⏰ Timer Habis", popupClose:"Tutup",
+    notif:"Pendataan Santri"
+  },
+  en:{
+    title:"📝 Student Data Entry", back:"← Dashboard", form:"Input Form", nama:"Student Name",
+    kelas:"Class", tanggal:"Date", jenis:"Learning Type", tujuan:"Purpose (special)",
+    pc:"PC Number", timer:"Timer (Minutes)", tambah:"➕ Add Entry", export:"📤 Export to Excel",
+    reset:"🔄 Reset", list:"Data List", aksi:"Action", popupTitle:"⏰ Time's Up", popupClose:"Close",
+    notif:"Student Data Entry"
+  }
+};
+
+function toggleLang(){
+  lang=(lang==="id"?"en":"id");
+  const t=textMap[lang];
+  document.getElementById("titleText").innerText=t.title;
+  document.getElementById("backBtn").innerText=t.back;
+  document.getElementById("formTitle").innerText=t.form;
+  document.getElementById("lblNama").innerText=t.nama;
+  document.getElementById("lblKelas").innerText=t.kelas;
+  document.getElementById("lblTanggal").innerText=t.tanggal;
+  document.getElementById("lblJenis").innerText=t.jenis;
+  document.getElementById("lblTujuan").innerText=t.tujuan;
+  document.getElementById("lblPC").innerText=t.pc;
+  document.getElementById("lblTimer").innerText=t.timer;
+  document.getElementById("btnTambah").innerText=t.tambah;
+  document.getElementById("btnExport").innerText=t.export;
+  document.getElementById("btnReset").innerText=t.reset;
+  document.getElementById("listTitle").innerText=t.list;
+  document.getElementById("thNama").innerText=t.nama;
+  document.getElementById("thKelas").innerText=t.kelas;
+  document.getElementById("thTanggal").innerText=t.tanggal;
+  document.getElementById("thJenis").innerText=t.jenis;
+  document.getElementById("thPC").innerText=t.pc;
+  document.getElementById("thTimer").innerText=t.timer;
+  document.getElementById("thAksi").innerText=t.aksi;
+  document.getElementById("langBtn").innerText=(lang==="id"?"🌐 English":"🌐 Indonesia");
+}
+
+// ====== UTILITY ======
 function renderKelasOptions(){
   const grid=document.getElementById("kelasGrid");
   grid.innerHTML=KELAS_LIST.map(k=>`<label><input type="radio" name="kelas" value="${k}">${k}</label>`).join('');
 }
+function goBack(){window.location.href="index.html";}
 document.getElementById("tanggal").value=new Date().toLocaleDateString("id-ID");
 
 function setTimer(){
   const jenis=document.getElementById("jenisPembelajaran").value;
-  let t=document.getElementById("timer");
-  if(jenis==="SNBT"||jenis==="TKA"){t.value=60;t.disabled=true;}
-  else if(jenis==="Info Kuliah"){t.value=30;t.disabled=true;}
-  else{t.value="";t.disabled=false;}
+  const timer=document.getElementById("timer");
+  const tujuan=document.getElementById("tujuanContainer");
+  if(jenis==="SNBT"||jenis==="TKA"){timer.value=60;timer.disabled=true;tujuan.style.display="none";}
+  else if(jenis==="Info Kuliah"){timer.value=30;timer.disabled=true;tujuan.style.display="none";}
+  else if(jenis==="Khusus"){timer.value="";timer.disabled=false;tujuan.style.display="block";}
+  else{timer.value="";timer.disabled=false;tujuan.style.display="none";}
 }
 
-function resetFormFields(){
-  document.getElementById("nama").value="";
-  document.querySelectorAll('input[name="kelas"]').forEach(c=>c.checked=false);
-  document.getElementById("pcNumber").value="";
-  document.getElementById("timer").value="";
-  setTimer();
+function startFlashing(title){
+  if(isFlashing)return;
+  isFlashing=true;
+  let showOriginal=false;
+  flashIntervalId=setInterval(()=>{document.title=showOriginal?originalTitle:title;showOriginal=!showOriginal;},1000);
 }
+function stopFlashing(){if(isFlashing){clearInterval(flashIntervalId);document.title=originalTitle;isFlashing=false;}}
 
+// ====== MAIN ======
 function tambahEntri(){
   const nama=document.getElementById("nama").value.trim();
   const kelas=document.querySelector('input[name="kelas"]:checked')?.value||"";
   const tanggal=document.getElementById("tanggal").value;
   const jenis=document.getElementById("jenisPembelajaran").value;
+  const tujuan=document.getElementById("tujuan").value.trim();
   const pc=document.getElementById("pcNumber").value.trim();
-  let timer=document.getElementById("timer").value.trim();
-  if(!nama||!kelas||!pc||!timer){alert("Lengkapi semua kolom!");return;}
-  if(jenis==="SNBT"||jenis==="TKA") timer=60;
-  else if(jenis==="Info Kuliah") timer=30;
+  const timer=document.getElementById("timer").value.trim();
+  if(!nama||!kelas||!pc||!timer){alert("Isi semua kolom! / Fill all fields!");return;}
 
   const tbody=document.querySelector("#tabelData tbody");
   const row=tbody.insertRow();
   row.insertCell(0).innerText=nama;
   row.insertCell(1).innerText=kelas;
   row.insertCell(2).innerText=tanggal;
-  row.insertCell(3).innerText=jenis;
+  row.insertCell(3).innerText=(jenis==="Khusus"?jenis+" - "+tujuan:jenis);
   row.insertCell(4).innerText=pc;
   row.insertCell(5).innerText=timer+" menit";
-  row.insertCell(6).innerHTML=`<button class="btn btn-blue" onclick="startStopTimer(this, ${tbody.rows.length-1}, ${timer})">Stop</button>
-    <button class="btn btn-red" onclick="deleteRow(this)">Delete</button>`;
-  resetFormFields();
+  const act=row.insertCell(6);
+  act.innerHTML=`<button class="btn btn-blue" onclick="startStopTimer(this,${tbody.rows.length-1},${timer})">Start</button>
+                 <button class="btn btn-red" onclick="deleteRow(this)">Delete</button>`;
 
-  // auto start timer
-  const startBtn=row.cells[6].querySelector(".btn-blue");
+  resetFields();
+  const startBtn=act.querySelector(".btn-blue");
   startStopTimer(startBtn,tbody.rows.length-1,timer);
 }
 
-function startStopTimer(button,rowIndex,timer){
+function parseTime(t){if(t.includes(":")){const [m,s]=t.split(":");return parseInt(m)*60+(parseInt(s)||0);}return parseInt(t)*60;}
+
+function startStopTimer(btn,rowIndex,timer){
   const row=document.querySelector("#tabelData tbody").rows[rowIndex];
   const cell=row.cells[5];
-  let timeLeft=parseInt(timer)*60;
-
+  let left=parseTime(cell.innerText.includes(":")?cell.innerText:timer);
   if(!isRunning[rowIndex]){
     intervals[rowIndex]=setInterval(()=>{
-      if(timeLeft<=0){
+      if(left<=0){
         clearInterval(intervals[rowIndex]);
         cell.innerText="Selesai!";
-        playSound();showPopup(row);
-        startFlashingTitle(`⏰ Waktu ${row.cells[0].innerText} habis!`);
-        button.innerText="Start";isRunning[rowIndex]=false;
+        playSound();
+        const nama=row.cells[0].innerText,pc=row.cells[4].innerText;
+        startFlashing(`⏰ ${nama} PC ${pc} selesai`);
+        showPopup(`${nama} - PC ${pc}`);
+        showNotif(`${nama} - PC ${pc}`);
+        btn.innerText="Start";isRunning[rowIndex]=false;
       }else{
-        let m=Math.floor(timeLeft/60),s=timeLeft%60;
-        cell.innerText=`${m}:${s<10?'0':''}${s} menit`;
-        timeLeft--;
+        const m=Math.floor(left/60),s=left%60;
+        cell.innerText=`${m}:${s<10?"0":""}${s}`;
+        left--;
       }
     },1000);
-    button.innerText="Stop";isRunning[rowIndex]=true;
-  }else{
-    clearInterval(intervals[rowIndex]);
-    button.innerText="Start";isRunning[rowIndex]=false;
+    btn.innerText="Stop";isRunning[rowIndex]=true;
+  }else{clearInterval(intervals[rowIndex]);btn.innerText="Start";isRunning[rowIndex]=false;}
+}
+
+function deleteRow(btn){btn.parentElement.parentElement.remove();}
+
+function playSound(){const a=document.getElementById("notificationSound");a.loop=true;a.currentTime=0;a.play();}
+function stopSound(){const a=document.getElementById("notificationSound");a.pause();a.currentTime=0;a.loop=false;}
+
+function showPopup(msg){
+  const t=textMap[lang];
+  const overlay=document.createElement("div");overlay.className="popup-overlay";
+  const pop=document.createElement("div");pop.className="popup";
+  pop.innerHTML=`<h2>${t.popupTitle}</h2><p>${msg}</p><button onclick="closePopup()">${t.popupClose}</button>`;
+  overlay.appendChild(pop);document.body.appendChild(overlay);
+}
+function closePopup(){document.querySelector(".popup-overlay").remove();stopSound();stopFlashing();}
+
+function showNotif(txt){
+  const t=textMap[lang];
+  if("Notification"in window&&Notification.permission==="granted"){
+    new Notification(t.notif,{body:txt,icon:"https://cdn-icons-png.flaticon.com/512/992/992700.png"});
   }
 }
 
-function deleteRow(button){button.parentElement.parentElement.remove();}
-function playSound(){const a=document.getElementById('notificationSound');a.currentTime=0;a.play().catch(()=>{});}
-function showPopup(row){
-  const nama=row.cells[0].innerText,kelas=row.cells[1].innerText,pc=row.cells[4].innerText;
-  document.getElementById("popupMessage").innerText=`Waktu ${nama} (kelas ${kelas}) di PC ${pc} telah habis!`;
-  document.getElementById("resetPopup").style.display="block";
+function exportExcel(){
+  const tbl=document.getElementById("tabelData");
+  const wb=XLSX.utils.table_to_book(tbl,{sheet:"Santri"});
+  XLSX.writeFile(wb,"pendataan_"+new Date().toISOString().slice(0,10)+".xlsx");
 }
-function closePopup(){document.getElementById("resetPopup").style.display="none";stopFlashingTitle();}
-function startFlashingTitle(msg){if(isFlashing) return;isFlashing=true;let showOriginal=false;flashIntervalId=setInterval(()=>{document.title=showOriginal?originalTitle:msg;showOriginal=!showOriginal;},1000);}
-function stopFlashingTitle(){if(isFlashing){clearInterval(flashIntervalId);document.title=originalTitle;isFlashing=false;}}
-function exportExcel(){const tbl=document.getElementById("tabelData");const wb=XLSX.utils.table_to_book(tbl,{sheet:"Santri"});XLSX.writeFile(wb,"pendataan_"+new Date().toISOString().slice(0,10)+".xlsx");}
-function resetForm(){if(confirm("Sudah export data?")){resetFormFields();document.getElementById("tanggal").value=new Date().toLocaleDateString("id-ID");document.getElementById("jenisPembelajaran").value="SNBT";document.querySelector("#tabelData tbody").innerHTML="";}}
-function goBack(){window.location.href="index.html";}
+function resetForm(){
+  if(confirm("Sudah export data ke Excel? / Already exported data?")){
+    document.querySelector("#tabelData tbody").innerHTML="";
+    resetFields();
+  }
+}
+function resetFields(){
+  document.getElementById("nama").value="";
+  document.querySelectorAll('input[name="kelas"]').forEach(c=>c.checked=false);
+  document.getElementById("pcNumber").value="";
+  document.getElementById("timer").value="";
+  document.getElementById("tujuan").value="";
+  document.getElementById("jenisPembelajaran").value="SNBT";
+  setTimer();
+}
 
-window.addEventListener("beforeunload",function(e){e.preventDefault();e.returnValue="Data mungkin hilang jika belum diexport.";});
-document.addEventListener("click",()=>{const a=document.getElementById("notificationSound");a.volume=0.01;a.play().then(()=>{a.pause();a.currentTime=0;a.volume=1.0;}).catch(()=>{});},{once:true});
+if("Notification"in window&&Notification.permission==="default"){Notification.requestPermission();}
 renderKelasOptions();setTimer();
 </script>
 </body>
 </html>
+
